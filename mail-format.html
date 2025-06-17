@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis of mail-format.sh Script</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0 auto; max-width: 900px; padding: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .output { background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Analysis of mail-format.sh Script</h1>
+    
+    <h2>Script Overview</h2>
+    <p>The <code>mail-format.sh</code> script is designed to format email messages by:</p>
+    <ol>
+        <li>Removing carets (<code>></code>) and tabs at the beginning of lines</li>
+        <li>Folding long lines to a specified maximum width (70 characters by default)</li>
+    </ol>
+    
+    <h2>Detailed Code Analysis</h2>
+    
+    <h3>1. Initial Setup and Argument Checking</h3>
+    <pre><code>#!/bin/bash
+# mail-format.sh (ver. 1.1): Format e-mail messages.
+# Gets rid of carets, tabs, and also folds excessively long lines.
+# =================================================================
+# Standard Check for Script Argument(s)
+ARGS=1
+E_BADARGS=85
+E_NOFILE=86</code></pre>
+    
+    <h3>2. Argument Validation</h3>
+    <pre><code>if [ $# -ne $ARGS ] # Correct number of arguments passed to script?
+then
+    echo "Usage: `basename $0` filename"
+    exit $E_BADARGS
+fi</code></pre>
+    
+    <h3>3. File Existence Check</h3>
+    <pre><code>if [ -f "$1" ] # Check if file exists.
+then
+    file_name=$1
+else
+    echo "File \"$1\" does not exist."
+    exit $E_NOFILE
+fi</code></pre>
+    
+    <h2>Execution with Sample Input</h2>
+    <p>Sample input file <code>test_email.txt</code>:</p>
+    <pre><code>> This is a quoted email message with some excessive
+>     indentation and long lines that need to be wrapped. This particular line is definitely longer than seventy characters and should be wrapped by the script.
+    This line has leading spaces but no caret.
+This line has trailing spaces    
+> This is another quoted line.</code></pre>
+    
+    <h2>Intermediate Results</h2>
+    
+    <h3>Original Content</h3>
+    <div class="output">
+        <pre>> This is a quoted email message with some excessive
+>     indentation and long lines that need to be wrapped. This particular line is definitely longer than seventy characters and should be wrapped by the script.
+    This line has leading spaces but no caret.
+This line has trailing spaces    
+> This is another quoted line.</pre>
+    </div>
+    
+    <h3>After sed Transformations</h3>
+    <div class="output">
+        <pre>This is a quoted email message with some excessive
+indentation and long lines that need to be wrapped. This particular line is definitely longer than seventy characters and should be wrapped by the script.
+This line has leading spaces but no caret.
+This line has trailing spaces
+This is another quoted line.</pre>
+    </div>
+    
+    <h3>Final Output After Folding</h3>
+    <div class="output">
+        <pre>This is a quoted email message with some excessive indentation and long
+lines that need to be wrapped. This particular line is definitely
+longer than seventy characters and should be wrapped by the script.
+This line has leading spaces but no caret.
+This line has trailing spaces
+This is another quoted line.</pre>
+    </div>
+    
+    <h2>Conclusion</h2>
+    <p>The <code>mail-format.sh</code> script provides a simple but effective way to clean up email messages. It demonstrates the power of combining Unix text processing tools like <code>sed</code> and <code>fold</code> to solve common formatting problems.</p>
+</body>
+</html>
