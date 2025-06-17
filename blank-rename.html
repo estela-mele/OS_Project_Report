@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis of blank-rename.sh</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0 auto; max-width: 900px; padding: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .output { background-color: #e8f4f8; border-left: 4px solid #3498db; padding: 10px; margin: 10px 0; }
+        .warning { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+        .improvement { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Analysis of blank-rename.sh</h1>
+    
+    <h2>Script Overview</h2>
+    <p>The <code>blank-rename.sh</code> script replaces spaces with underscores in filenames.</p>
+    
+    <h2>Key Features</h2>
+    <ul>
+        <li>Simple space-to-underscore conversion</li>
+        <li>Counts and reports renamed files</li>
+        <li>Handles singular/plural output</li>
+    </ul>
+    
+    <h2>Limitations</h2>
+    <div class="warning">
+        <ul>
+            <li>No protection against overwriting existing files</li>
+            <li>No recursive directory processing</li>
+            <li>No dry-run mode</li>
+            <li>Fixed underscore replacement (no alternatives)</li>
+            <li>Only processes current directory</li>
+        </ul>
+    </div>
+    
+    <h2>Example Usage</h2>
+    <pre>$ touch "file one.txt" "document two.doc"
+$ ./blank-rename.sh
+2 files renamed.</pre>
+    
+    <h2>Improved Version Features</h2>
+    <div class="improvement">
+        <ul>
+            <li>Recursive operation with <code>-r</code></li>
+            <li>Dry-run mode with <code>-n</code></li>
+            <li>Custom separator with <code>-s</code></li>
+            <li>Better handling of special characters</li>
+            <li>Overwrite protection</li>
+        </ul>
+    </div>
+    
+    <h2>Improved Script</h2>
+    <pre><code>#!/bin/bash
+# blank-rename.sh - enhanced version
+
+VERSION="2.0"
+DRY_RUN=false
+RECURSIVE=false
+SEPARATOR="_"
+
+usage() {
+    echo "Usage: ${0##*/} [-n] [-r] [-s separator]"
+    echo "Options:"
+    echo "  -n    Dry run (show changes without executing)"
+    echo "  -r    Process directories recursively"
+    echo "  -s    Use specified separator (default: _)"
+    exit 1
+}
+
+while getopts "nrs:" opt; do
+    case $opt in
+        n) DRY_RUN=true ;;
+        r) RECURSIVE=true ;;
+        s) SEPARATOR="$OPTARG" ;;
+        *) usage ;;
+    esac
+done
+
+[ "$RECURSIVE" = true ] && FIND_CMD="find . -type f" || FIND_CMD="find . -maxdepth 1 -type f"
+
+count=0
+while IFS= read -r -d '' file; do
+    dir="${file%/*}"
+    base="${file##*/}"
+    
+    if [[ "$base" =~ [[:space:]] ]]; then
+        newbase="${base//[[:space:]]/$SEPARATOR}"
+        if [ "$base" != "$newbase" ]; then
+            if [ -e "$dir/$newbase" ]; then
+                echo "Warning: $dir/$newbase exists - skipping $file" >&2
+                continue
+            fi
+            
+            if $DRY_RUN; then
+                echo "Would rename: $file -> $dir/$newbase"
+            else
+                mv -- "$file" "$dir/$newbase"
+            fi
+            ((count++))
+        fi
+    fi
+done < <($FIND_CMD -print0)
+
+[ $count -eq 1 ] && echo "1 file renamed." || echo "$count files renamed."
+exit 0</code></pre>
+</body>
+</html>
