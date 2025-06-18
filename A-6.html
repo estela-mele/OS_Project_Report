@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Collatz Conjecture Script Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0 auto; max-width: 900px; padding: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .math { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin: 10px 0; }
+        .improvement { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Collatz Conjecture Script Analysis</h1>
+    
+    <div class="math">
+        <h2>The Collatz Conjecture</h2>
+        <p>Also known as the "3n + 1" problem, this unsolved mathematical conjecture states:</p>
+        <p>For any positive integer n, the sequence:</p>
+        <ul>
+            <li>n → n/2 (if n is even)</li>
+            <li>n → 3n + 1 (if n is odd)</li>
+        </ul>
+        <p>will always eventually reach 1, regardless of the starting value.</p>
+    </div>
+    
+    <h2>Original Script Features</h2>
+    <ul>
+        <li>Accepts seed value or uses process ID</li>
+        <li>Formatted output in columns</li>
+        <li>200 iteration limit</li>
+        <li>Demonstrates basic sequence generation</li>
+    </ul>
+    
+    <h2>Example Output</h2>
+    <pre>$ ./collatz.sh 5
+C(5) -*- 200 Iterations
+
+      5     16      8      4      2      1      4      2      1      4
+      2      1      4      2      1      4      2      1      4      2
+      1      4      2      1      4      2      1      4      2      1
+    ...</pre>
+    
+    <div class="improvement">
+        <h2>Enhanced Version Features</h2>
+        <ul>
+            <li>Input validation</li>
+            <li>Automatic termination at 1</li>
+            <li>Step counting</li>
+            <li>Maximum value tracking</li>
+            <li>Improved output formatting</li>
+            <li>Summary statistics</li>
+        </ul>
+    </div>
+    
+    <h2>Mathematical Significance</h2>
+    <p>The Collatz conjecture remains unproven despite being simple to state. Notable characteristics:</p>
+    <ul>
+        <li>Verified up to 2<sup>60</sup> (as of 2020)</li>
+        <li>Exhibits fractal-like patterns</li>
+        <li>Used in computer science education</li>
+        <li>Related to dynamical systems and number theory</li>
+    </ul>
+</body>
+</html>
