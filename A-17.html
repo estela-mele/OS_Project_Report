@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Analysis: Enhanced Directory Tree with Sizes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .note {
+            background-color: #e7f4ff;
+            padding: 10px;
+            border-left: 4px solid #2c3e50;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #ffebee;
+            padding: 10px;
+            border-left: 4px solid #f44336;
+            margin: 15px 0;
+        }
+        .tree {
+            font-family: monospace;
+            white-space: pre;
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+        .config {
+            background-color: #fff8e1;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .algorithm {
+            background-color: #f0fff0;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Script Analysis: Enhanced Directory Tree with Sizes</h1>
+    
+    <section id="introduction">
+        <h2>Introduction</h2>
+        <p>This report analyzes <code>tree2.sh</code>, an enhanced directory tree script that displays file/directory sizes and focuses on the largest items. The script combines <code>du</code> for size calculation with recursive tree-building functionality.</p>
+    </section>
+    
+    <section id="script-overview">
+        <h2>Script Overview</h2>
+        <p>The script performs the following operations:</p>
+        <ol>
+            <li>Creates a temporary inventory of all files/directories and their sizes using <code>du -akx</code></li>
+            <li>Processes this list to display a tree structure showing only the largest items</li>
+            <li>Includes configurable parameters for depth and number of items displayed</li>
+            <li>Formats sizes in human-readable dotted thousand format</li>
+            <li>Uses recursion to build the tree structure</li>
+        </ol>
+        
+        <h3>Configuration Parameters</h3>
+        <div class="config">
+            <pre><code>TOP=5         # Top 5 biggest (sub)directories
+MAXRECURS=5   # Max 5 subdirectories/recursions deep
+E_BL=80       # Blank line already returned
+E_DIR=81      # Directory not specified</code></pre>
+            <p>These parameters control the script's behavior and can be adjusted before running.</p>
+        </div>
+    </section>
+    
+    <section id="step-by-step-analysis">
+        <h2>Step-by-Step Analysis</h2>
+        
+        <h3>1. Temporary File Setup</h3>
+        <pre><code>PID=$$                     # Our own process ID
+SELF=`basename $0`         # Our own program name
+TMP="/tmp/${SELF}.${PID}.tmp" # Temporary 'du' result</code></pre>
+        <p>Creates a unique temporary file based on the script name and process ID to store <code>du</code> results.</p>
+        
+        <h3>2. The dot() Function</h3>
+        <pre><code>function dot { 
+    echo " $*" |
+    sed -e :a -e 's/\(.*[0-9]\)\([0-9]\{3\}\)/\1,\2/;ta' |
+    tail -c 12; 
+}</code></pre>
+        <p>Formats numbers with thousand separators (e.g., 1234567 becomes 1,234,567).</p>
+        
+        <h3>3. The tree() Function (Core Algorithm)</h3>
+        <div class="algorithm">
+            <h4>Key Components:</h4>
+            <ol>
+                <li><strong>Input Parameters:</strong>
+                    <pre><code>recurs="$1"    # Recursion depth
+prefix="$2"   # Visual prefix for tree structure
+minsize="$3"  # Minimum size to display
+dirname="$4"  # Directory to process</code></pre>
+                </li>
+                <li><strong>Getting Top Entries:</strong>
+                    <pre><code>LIST=`egrep "[[:space:]]${dirname}/[^/]*$" "$TMP" |
+    awk '{if($1>'$minsize') print;}' | sort -nr | head -$TOP`</code></pre>
+                    <p>Filters the temporary file for entries in the current directory, above the size threshold, sorted by size.</p>
+                </li>
+                <li><strong>Main Display Loop:</strong>
+                    <pre><code>echo "`dot $size`$prefix +-$bname"</code></pre>
+                    <p>Formats each entry with size and tree structure markers.</p>
+                </li>
+                <li><strong>Recursive Processing:</strong>
+                    <pre><code>if [ -d "$name" -a $recurs -lt $MAXRECURS ]; then
+    [ $cnt -lt $num ] \
+    || (tree $((recurs+1)) "$prefix " $((size/10)) "$name") \
+    && (tree $((recurs+1)) "$prefix |" $((size/10)) "$name")
+fi</code></pre>
+                    <p>Recursively processes subdirectories with increased depth, adjusted prefix, and size threshold.</p>
+                </li>
+            </ol>
+        </div>
+        
+        <h3>4. Main Program Execution</h3>
+        <pre><code>du -akx "$rootdir" 1>"$TMP" 2>/dev/null
+size=`tail -1 "$TMP" | awk '{print $1}'`
+echo "`dot $size` $rootdir"
+tree 0 "" 0 "$rootdir"</code></pre>
+        <p>Builds the initial inventory, displays the root directory, and starts the recursive tree building.</p>
+    </section>
+    
+    <section id="experimentation">
+        <h2>Experimentation and Results</h2>
+        
+        <h3>Sample Output Structure</h3>
+        <div class="tree">
+ 12,345,678 /path/to/directory
+  1,234,567 +-subdir1/
+    123,456 | +-file1
+    100,000 | +-subsubdir/
+      50,000 |   +-file2
+   900,000 +-subdir2/
+    800,000 | +-largefile.dat
+        </div>
+        
+        <h3>Modified Version with Enhanced Features</h3>
+        <pre><code>#!/bin/bash
+
+# Enhanced configuration
+TOP=10        # Show top 10 instead of 5
+MAXRECURS=3   # Limit to 3 levels deep
+MIN_PCT=5     # Minimum size percentage of parent to display
+
+function dot { 
+    num=$1
+    [[ $num -ge 1000000000 ]] && printf "%0.2fG" $(echo "$num/1000000000" | bc -l) && return
+    [[ $num -ge 1000000 ]] && printf "%0.2fM" $(echo "$num/1000000" | bc -l) && return
+    [[ $num -ge 1000 ]] && printf "%0.1fK" $(echo "$num/1000" | bc -l) && return
+    echo "${num}B"
+}
+
+function tree {
+    local recurs=$1 prefix=$2 minsize=$3 dirname=$4
+    local LIST cnt num bname size name
+    
+    LIST=$(egrep "[[:space:]]${dirname}/[^/]*$" "$TMP" |
+           awk -v minsize=$minsize -v minpct=$MIN_PCT \
+               '{if($1>minsize && $1>(minsize*minpct/100)) print $1,$2}' |
+           sort -nr | head -$TOP)
+    
+    [ -z "$LIST" ] && return
+    
+    cnt=0
+    num=$(echo "$LIST" | wc -l)
+    
+    while read size name; do
+        ((cnt++))
+        bname=$(basename "$name")
+        [ -d "$name" ] && bname="$bname/"
+        
+        printf "%8s%s +-%s\n" "$(dot $size)" "$prefix" "$bname"
+        
+        if [ -d "$name" ] && [ $recurs -lt $MAXRECURS ]; then
+            if [ $cnt -lt $num ]; then
+                tree $((recurs+1)) "$prefix |" $((size/10)) "$name"
+            else
+                tree $((recurs+1)) "$prefix  " $((size/10)) "$name"
+            fi
+        fi
+    done <<< "$LIST"
+    
+    echo " $prefix"
+    return $E_BL
+}</code></pre>
+        
+        <div class="note">
+            <p><strong>Enhancements include:</strong></p>
+            <ul>
+                <li>Human-readable size formatting (KB, MB, GB)</li>
+                <li>Percentage-based size threshold</li>
+                <li>Better handling of very large numbers</li>
+                <li>Improved output formatting with <code>printf</code></li>
+            </ul>
+        </div>
+    </section>
+    
+    <section id="questions">
+        <h2>Key Questions</h2>
+        
+        <div class="question">
+            <h3>1. How does the script determine which items to display?</h3>
+            <p>The script uses two filtering criteria:</p>
+            <ul>
+                <li>Absolute size: Must be greater than <code>$minsize</code></li>
+                <li>Relative size: Only the top <code>$TOP</code> largest items in each directory</li>
+                <li>In the modified version: Also checks minimum percentage of parent size</li>
+            </ul>
+        </div>
+        
+        <div class="question">
+            <h3>2. What is the purpose of the recursive calls?</h3>
+            <p>The recursion serves three purposes:</p>
+            <ol>
+                <li>Increases depth level (<code>recurs+1</code>)</li>
+                <li>Adjusts the visual prefix (adding "|" or spaces)</li>
+                <li>Decreases the size threshold (<code>size/10</code>) for child items</li>
+            </ol>
+        </div>
+        
+        <div class="question">
+            <h3>3. What are the security implications of this script?</h3>
+            <ul>
+                <li>Creates temporary files in /tmp (potential race conditions)</li>
+                <li>Processes all readable files (may expose sensitive information)</li>
+                <li>As noted in the original comments, running as root shows more but is riskier</li>
+            </ul>
+        </div>
+    </section>
+    
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>This script provides a sophisticated approach to directory tree visualization:</p>
+        <ul>
+            <li>Focuses on the largest items in each directory</li>
+            <li>Provides size context with formatted numbers</li>
+            <li>Offers configurable depth and breadth</li>
+            <li>Demonstrates advanced shell scripting techniques</li>
+        </ul>
+        <p>While powerful, it should be used with caution due to its recursive nature and file system access. The enhanced version shows how the basic algorithm can be extended with more human-friendly features.</p>
+    </section>
+</body>
+</html>

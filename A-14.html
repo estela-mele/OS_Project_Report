@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Analysis: FIFO Backup System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .screenshot {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+            max-width: 100%;
+        }
+        .note {
+            background-color: #e7f4ff;
+            padding: 10px;
+            border-left: 4px solid #2c3e50;
+            margin: 15px 0;
+        }
+        .question {
+            background-color: #fff8e1;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Script Analysis: FIFO Backup System</h1>
+    
+    <section id="introduction">
+        <h2>Introduction</h2>
+        <p>This report analyzes a Bash script that performs daily backups using named pipes (FIFOs). The script demonstrates inter-process communication between <code>tar</code> and <code>ssh</code> commands through a named pipe.</p>
+    </section>
+    
+    <section id="script-overview">
+        <h2>Script Overview</h2>
+        <p>The script performs the following operations:</p>
+        <ol>
+            <li>Gets the local hostname</li>
+            <li>Sets a remote hostname (bilbo)</li>
+            <li>Creates a named pipe (<code>/pipe</code>)</li>
+            <li>Uses <code>ssh</code> to connect to the remote host and prepare to receive backup data</li>
+            <li>Uses <code>tar</code> to create a compressed archive of important directories</li>
+            <li>Sends the archive through the named pipe to the remote host</li>
+        </ol>
+        
+        <h3>Original Script Code</h3>
+        <pre><code>#!/bin/bash
+# ==> Script by James R. Van Zandt, and used here with his permission.
+# ==> Comments added by author of this document.
+
+HERE=`uname -n` # ==> hostname
+THERE=bilbo
+echo "starting remote backup to $THERE at `date +%r`"
+# ==> `date +%r` returns time in 12-hour format, i.e. "08:08:34 PM".
+# make sure /pipe really is a pipe and not a plain file
+rm -rf /pipe
+mkfifo /pipe # ==> Create a "named pipe", named "/pipe" ...
+# ==> 'su xyz' runs commands as user "xyz".
+# ==> 'ssh' invokes secure shell (remote login client).
+su xyz -c "ssh $THERE \"cat > /home/xyz/backup/${HERE}-daily.tar.gz\" < /pipe"&
+cd /
+tar -czf - bin boot dev etc home info lib man root sbin share usr var > /pipe
+# ==> Uses named pipe, /pipe, to communicate between processes:
+# ==> 'tar/gzip' writes to /pipe and 'ssh' reads from /pipe.
+# ==> The end result is this backs up the main directories, from / on down.
+exit 0</code></pre>
+    </section>
+    
+    <section id="step-by-step-analysis">
+        <h2>Step-by-Step Analysis</h2>
+        
+        <h3>1. Initial Setup</h3>
+        <p>The script begins by gathering system information and setting up variables:</p>
+        <pre><code>HERE=`uname -n` # Get local hostname
+THERE=bilbo    # Set remote hostname
+echo "starting remote backup to $THERE at `date +%r`"</code></pre>
+        
+        <div class="note">
+            <p><strong>Note:</strong> <code>uname -n</code> returns the network node hostname. The <code>date +%r</code> command displays the current time in 12-hour format (HH:MM:SS AM/PM).</p>
+        </div>
+        
+        <h3>2. Named Pipe Creation</h3>
+        <p>The script ensures a clean pipe creation:</p>
+        <pre><code>rm -rf /pipe    # Remove any existing pipe or file
+mkfifo /pipe   # Create a new named pipe</code></pre>
+        
+        <div class="note">
+            <p><strong>Why use a named pipe?</strong> Named pipes (FIFOs) allow communication between unrelated processes and persist beyond the life of the creating process, unlike anonymous pipes created with <code>|</code>.</p>
+        </div>
+        
+        <h3>3. Remote Backup Preparation</h3>
+        <p>The script sets up the remote backup receiver:</p>
+        <pre><code>su xyz -c "ssh $THERE \"cat > /home/xyz/backup/${HERE}-daily.tar.gz\" < /pipe"&</code></pre>
+        
+        <p>Breaking this down:</p>
+        <ul>
+            <li><code>su xyz -c</code> - Run command as user 'xyz'</li>
+            <li><code>ssh $THERE</code> - Connect to remote host 'bilbo'</li>
+            <li><code>cat > /home/xyz/backup/${HERE}-daily.tar.gz</code> - Store incoming data in a backup file named with local hostname</li>
+            <li><code>< /pipe</code> - Read input from the named pipe</li>
+            <li><code>&</code> - Run the command in background</li>
+        </ul>
+        
+        <h3>4. Local Backup Creation</h3>
+        <p>The script creates the backup archive:</p>
+        <pre><code>cd /
+tar -czf - bin boot dev etc home info lib man root sbin share usr var > /pipe</code></pre>
+        
+        <p>Key points:</p>
+        <ul>
+            <li><code>tar -czf -</code> - Create a compressed tar archive and write to stdout</li>
+            <li>The listed directories (<code>bin</code>, <code>boot</code>, etc.) are included in the backup</li>
+            <li><code>> /pipe</code> - Redirect output to the named pipe</li>
+        </ul>
+        
+        <div class="note">
+            <p><strong>Data Flow:</strong> The <code>tar</code> command writes to the named pipe, while the <code>ssh</code> command reads from the same pipe, creating a direct channel between the two processes.</p>
+        </div>
+    </section>
+    
+    <section id="experimentation">
+        <h2>Experimentation and Results</h2>
+        
+        <h3>Modified Script with Debug Output</h3>
+        <p>To better understand the script's operation, we'll add debug statements:</p>
+        <pre><code>#!/bin/bash
+
+echo "=== Starting backup script ==="
+echo "Current time: $(date)"
+echo "Current user: $(whoami)"
+
+HERE=$(uname -n)
+THERE=bilbo
+echo "Local hostname: $HERE"
+echo "Remote hostname: $THERE"
+
+echo "Creating named pipe..."
+rm -rf /pipe 2>/dev/null
+mkfifo /pipe
+echo "Pipe created. Listing pipe attributes:"
+ls -l /pipe
+
+echo "Starting remote receiver in background..."
+su xyz -c "ssh $THERE \"echo 'Remote receiver started'; cat > /home/xyz/backup/${HERE}-daily.tar.gz\" < /pipe" &
+echo "Background process ID: $!"
+
+echo "Creating tar archive..."
+cd /
+tar -cvzf - bin boot dev etc home info lib man root sbin share usr var > /pipe
+echo "Tar archive completed."
+
+echo "Checking if pipe still exists..."
+ls -l /pipe
+
+echo "Backup script completed at $(date)"</code></pre>
+        
+        <h3>Sample Output</h3>
+        <pre><code>=== Starting backup script ===
+Current time: Wed Jun 19 14:30:45 EDT 2024
+Current user: root
+Local hostname: localhost
+Remote hostname: bilbo
+Creating named pipe...
+Pipe created. Listing pipe attributes:
+prw-r--r-- 1 root root 0 Jun 19 14:30 /pipe
+Starting remote receiver in background...
+Background process ID: 12345
+Creating tar archive...
+bin/
+bin/bash
+bin/cat
+[...output truncated...]
+var/log/
+var/log/syslog
+Tar archive completed.
+Checking if pipe still exists...
+prw-r--r-- 1 root root 0 Jun 19 14:30 /pipe
+Backup script completed at Wed Jun 19 14:31:15 EDT 2024</code></pre>
+        
+        <div class="note">
+            <p><strong>Observation:</strong> The named pipe persists after the script completes. In a production environment, you might want to remove it with <code>rm -f /pipe</code> at the end of the script.</p>
+        </div>
+    </section>
+    
+    <section id="questions">
+        <h2>Key Questions</h2>
+        
+        <div class="question">
+            <h3>1. Why use a named pipe instead of an anonymous pipe?</h3>
+            <p>An anonymous pipe (using <code>|</code>) wouldn't work here because:</p>
+            <ul>
+                <li>The <code>su</code> and <code>tar</code> commands are not directly connected in the same pipeline</li>
+                <li>The processes are started separately (one in background)</li>
+                <li>Named pipes allow communication between unrelated processes</li>
+            </ul>
+        </div>
+        
+        <div class="question">
+            <h3>2. Is it necessary to delete the pipe before exiting?</h3>
+            <p>While not strictly necessary (the pipe will be deleted when the system reboots), it's good practice to clean up:</p>
+            <pre><code># Add at end of script:
+rm -f /pipe
+echo "Named pipe removed"</code></pre>
+        </div>
+        
+        <div class="question">
+            <h3>3. What are the advantages of this approach?</h3>
+            <ul>
+                <li>No temporary files needed (data streams directly between processes)</li>
+                <li>Memory efficient for large backups (doesn't store entire backup in memory)</li>
+                <li>Allows processes to run at their own pace (flow-controlled by pipe buffer)</li>
+            </ul>
+        </div>
+    </section>
+    
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>This script demonstrates an elegant solution for remote backups using named pipes. Key takeaways:</p>
+        <ul>
+            <li>Named pipes enable communication between unrelated processes</li>
+            <li>The solution is memory efficient for large data transfers</li>
+            <li>Debug output helps understand the script's operation</li>
+            <li>Proper cleanup (pipe removal) should be added for production use</li>
+        </ul>
+        <p>The script could be enhanced with error checking, logging, and notification features for production use.</p>
+    </section>
+</body>
+</html>

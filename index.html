@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bash Script Exercises Navigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .exercise-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .exercise-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #e7f4ff;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .exercise-item:hover {
+            background-color: #d4e6f7;
+            transform: translateX(5px);
+        }
+        .exercise-link {
+            text-decoration: none;
+            color: #2980b9;
+            font-weight: bold;
+            display: block;
+        }
+        .exercise-link:hover {
+            color: #1a5276;
+        }
+        .exercise-desc {
+            color: #555;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        .back-to-top {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            text-decoration: none;
+        }
+        .back-to-top:hover {
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Running and Analyzing Scripts Navigation</h1>
+        
+        <ul class="exercise-list">
+             <li class="exercise-item">
+                <a href="A-1.html" class="exercise-link">Exercise A-1</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-2.html" class="exercise-link">Exercise A-2</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-3.html" class="exercise-link">Exercise A-3</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-4.html" class="exercise-link">Exercise A-4</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-5.html" class="exercise-link">Exercise A-5</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-6.html" class="exercise-link">Exercise A-6</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-7.html" class="exercise-link">Exercise A-7</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-8.html" class="exercise-link">Exercise A-8</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-9.html" class="exercise-link">Exercise A-9</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-10.html" class="exercise-link">Exercise A-10</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-11.html" class="exercise-link">Exercise A-11</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-12.html" class="exercise-link">Exercise A-12</a>
+            </li>
+
+             <li class="exercise-item">
+                <a href="A-13.html" class="exercise-link">Exercise A-13</a>
+             </li>
+
+            <li class="exercise-item">
+                <a href="A-14.html" class="exercise-link">Exercise A-14: FIFO Backup Script</a>
+            </li>
+            
+            <li class="exercise-item">
+                <a href="A-51.html" class="exercise-link">Exercise A-15: Prime Number Generation</a>
+            </li>
+            
+            <li class="exercise-item">
+                <a href="A-16.html" class="exercise-link">Exercise A-16: Directory Tree Display</a>
+            </li>
+            
+            <li class="exercise-item">
+                <a href="A-17.html" class="exercise-link">Exercise A-17: Alternate Directory Tree</a>
+            </li>
+            
+            <li class="exercise-item">
+                <a href="A-18.html" class="exercise-link">Exercise A-18: C-style String Functions</a>
+            </li>
+            
+            <li class="exercise-item">
+                <a href="A-19.html" class="exercise-link">Exercise A-19: Directory Information</a>
+            </li>
+            
+            <li class="exercise-item">
+                <a href="A-20.html" class="exercise-link">Exercise A-20: Hash Functions Library</a>
+            </li>
+        </ul>
+        
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

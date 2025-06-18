@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Header Removal Script Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0 auto; max-width: 900px; padding: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .example { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+        .improvement { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Message Header Removal Script Analysis</h1>
+    
+    <h2>Script Purpose</h2>
+    <p>The <code>behead.sh</code> script removes email/news message headers, leaving only the message body.</p>
+    
+    <h2>Key Features</h2>
+    <ul>
+        <li>Removes everything before first blank line (standard header delimiter)</li>
+        <li>Handles both piped input and file arguments</li>
+        <li>Additional empty line removal</li>
+        <li>Simple and portable shell implementation</li>
+    </ul>
+    
+    <div class="example">
+        <h2>Example Transformation</h2>
+        <h3>Input Message:</h3>
+        <pre>From: sender@example.com
+To: recipient@example.com
+Date: Thu, 01 Jan 1970 00:00:00 +0000
+Subject: Sample
+
+This is the actual message content.</pre>
+        
+        <h3>Output:</h3>
+        <pre>This is the actual message content.</pre>
+    </div>
+    
+    <div class="improvement">
+        <h2>Enhanced Version Features</h2>
+        <ul>
+            <li>Option to preserve Subject line</li>
+            <li>Verbose mode for error reporting</li>
+            <li>Better error handling</li>
+            <li>Support for more header formats</li>
+            <li>Command-line option parsing</li>
+        </ul>
+    </div>
+    
+    <h2>Common Message Headers</h2>
+    <p>Typical headers processed by this script:</p>
+    <ul>
+        <li><code>From:</code>, <code>To:</code>, <code>Cc:</code>, <code>Bcc:</code></li>
+        <li><code>Subject:</code></li>
+        <li><code>Date:</code></li>
+        <li><code>Message-ID:</code></li>
+        <li><code>Content-Type:</code></li>
+    </ul>
+    
+    <h2>Modern Email Processing</h2>
+    <p>For more sophisticated email processing consider:</p>
+    <pre><code># Using formail (procmail package)
+formail -X "" < message.txt  # Remove all headers
+
+# Using Python's email module
+python3 -c "import email; \
+msg = email.message_from_file(open('message.txt')); \
+print(msg.get_payload())"</code></pre>
+</body>
+</html>

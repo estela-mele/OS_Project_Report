@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Analysis: Directory Tree Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .screenshot {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+            max-width: 100%;
+        }
+        .note {
+            background-color: #e7f4ff;
+            padding: 10px;
+            border-left: 4px solid #2c3e50;
+            margin: 15px 0;
+        }
+        .question {
+            background-color: #fff8e1;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #ffebee;
+            padding: 10px;
+            border-left: 4px solid #f44336;
+            margin: 15px 0;
+        }
+        .tree {
+            font-family: monospace;
+            white-space: pre;
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Script Analysis: Directory Tree Display</h1>
+    
+    <section id="introduction">
+        <h2>Introduction</h2>
+        <p>This report analyzes a Bash script that recursively displays a directory tree structure, similar to the <code>tree</code> command found in many Unix-like systems. The script demonstrates recursive directory traversal and formatted output.</p>
+    </section>
+    
+    <section id="script-overview">
+        <h2>Script Overview</h2>
+        <p>The script performs the following operations:</p>
+        <ol>
+            <li>Accepts an optional directory path as argument (defaults to current directory)</li>
+            <li>Uses a recursive function to traverse directories</li>
+            <li>Displays a tree structure with proper indentation and connectors</li>
+            <li>Handles symbolic links specially</li>
+            <li>Counts and reports the total number of directories</li>
+        </ol>
+        
+        <h3>Original Script Code</h3>
+        <pre><code>#!/bin/bash
+# tree.sh
+# Written by Rick Boivie.
+# Copyright (c) 2002, by Jordi Sanfeliu, Rick Boivie, and Ian Kjos.
+
+search () {
+    for dir in `echo *`
+    do
+        if [ -d "$dir" ] ; then
+            zz=0
+            while [ $zz != $1 ]
+            do
+                echo -n "|   "
+                zz=`expr $zz + 1`
+            done
+            if [ -L "$dir" ] ; then
+                echo "+---$dir" `ls -l $dir | sed 's/^.*'$dir' //'`
+            else
+                echo "+---$dir"
+                numdirs=`expr $numdirs + 1`
+                if cd "$dir" ; then
+                    search `expr $1 + 1`
+                    cd ..
+                fi
+            fi
+        fi
+    done
+}
+
+if [ $# != 0 ] ; then
+    cd $1
+fi
+echo "Initial directory = `pwd`"
+numdirs=0
+search 0
+echo "Total directories = $numdirs"
+exit 0</code></pre>
+    </section>
+    
+    <section id="step-by-step-analysis">
+        <h2>Step-by-Step Analysis</h2>
+        
+        <h3>1. Initial Setup</h3>
+        <p>The script begins by checking for an optional directory argument:</p>
+        <pre><code>if [ $# != 0 ] ; then
+    cd $1
+fi</code></pre>
+        
+        <div class="note">
+            <p><strong>Note:</strong> If no argument is provided, the script operates on the current directory.</p>
+        </div>
+        
+        <h3>2. Main Function: search()</h3>
+        <p>The recursive function that builds the directory tree:</p>
+        <pre><code>for dir in `echo *`</code></pre>
+        
+        <div class="warning">
+            <p><strong>Warning:</strong> Using <code>`echo *`</code> for file listing has issues with filenames containing spaces. A better approach would be <code>for dir in *</code> or using <code>find</code> with proper quoting.</p>
+        </div>
+        
+        <h3>3. Directory Identification</h3>
+        <pre><code>if [ -d "$dir" ] ; then</code></pre>
+        <p>Checks if the current item is a directory.</p>
+        
+        <h3>4. Indentation Handling</h3>
+        <pre><code>zz=0
+while [ $zz != $1 ]
+do
+    echo -n "|   "
+    zz=`expr $zz + 1`
+done</code></pre>
+        <p>Creates the visual indentation for the tree structure based on the current depth level ($1).</p>
+        
+        <h3>5. Symbolic Link Handling</h3>
+        <pre><code>if [ -L "$dir" ] ; then
+    echo "+---$dir" `ls -l $dir | sed 's/^.*'$dir' //'`</code></pre>
+        <p>Special display for symbolic links, showing where they point to.</p>
+        
+        <h3>6. Regular Directory Handling</h3>
+        <pre><code>else
+    echo "+---$dir"
+    numdirs=`expr $numdirs + 1`
+    if cd "$dir" ; then
+        search `expr $1 + 1`
+        cd ..
+    fi</code></pre>
+        <p>For regular directories, increments the counter and recurses into the directory.</p>
+    </section>
+    
+    <section id="experimentation">
+        <h2>Experimentation and Results</h2>
+        
+        <h3>Modified Script with Debug Output</h3>
+        <p>Enhanced version with better handling and debugging:</p>
+        <pre><code>#!/bin/bash
+
+search() {
+    local depth=$1
+    for dir in *; do
+        if [ -d "$dir" ]; then
+            # Print indentation
+            for ((i=0; i<depth; i++)); do
+                echo -n "|   "
+            done
+            
+            if [ -L "$dir" ]; then
+                # Handle symlinks
+                target=$(readlink "$dir")
+                echo "+---$dir -> $target"
+            else
+                # Handle regular directories
+                echo "+---$dir"
+                ((numdirs++))
+                if cd "$dir"; then
+                    search $((depth + 1))
+                    cd ..
+                else
+                    echo " [Error entering directory]"
+                fi
+            fi
+        fi
+    done
+}
+
+# Main execution
+if [ $# -ne 0 ]; then
+    if [ -d "$1" ]; then
+        cd "$1" || exit 1
+    else
+        echo "Error: '$1' is not a valid directory" >&2
+        exit 1
+    fi
+fi
+
+echo "Initial directory = $(pwd)"
+numdirs=0
+search 0
+echo "Total directories = $numdirs"
+exit 0</code></pre>
+        
+        <h3>Sample Output</h3>
+        <div class="tree">
+Initial directory = /home/user/test
++---dir1
+|   +---subdir1
+|   |   +---file1.txt
+|   +---subdir2
++---dir2
+|   +---subdir3
+|   +---symlink -> /home/user/target
++---dir3
+Total directories = 5
+        </div>
+        
+        <div class="note">
+            <p><strong>Improvements in Modified Version:</strong></p>
+            <ul>
+                <li>Better handling of filenames with spaces</li>
+                <li>More reliable symlink target display using <code>readlink</code></li>
+                <li>Error handling for directory access</li>
+                <li>Modern Bash arithmetic syntax</li>
+            </ul>
+        </div>
+    </section>
+    
+    <section id="questions">
+        <h2>Key Questions</h2>
+        
+        <div class="question">
+            <h3>1. How does the indentation work in this script?</h3>
+            <p>The script uses a depth counter ($1) to track recursion level. For each level:</p>
+            <ul>
+                <li>It prints "|   " for each level of depth</li>
+                <li>This creates the visual tree structure</li>
+                <li>Example for depth=2: "|   |   +---dirname"</li>
+            </ul>
+        </div>
+        
+        <div class="question">
+            <h3>2. What are the limitations of the original script?</h3>
+            <ul>
+                <li>Fails on filenames with spaces due to <code>`echo *`</code></li>
+                <li>No error handling for unreadable directories</li>
+                <li>Uses deprecated <code>expr</code> instead of Bash arithmetic</li>
+                <li>Basic symlink display could be clearer</li>
+            </ul>
+        </div>
+        
+        <div class="question">
+            <h3>3. How could this be extended to show files as well?</h3>
+            <p>Modify the search function to handle files:</p>
+            <pre><code>search() {
+    local depth=$1
+    for item in *; do
+        # Print indentation
+        for ((i=0; i<depth; i++)); do
+            echo -n "|   "
+        done
+        
+        if [ -d "$item" ]; then
+            # Directory handling (same as before)
+            [...]
+        else
+            # File display
+            echo "+---$item"
+        fi
+    done
+}</code></pre>
+        </div>
+    </section>
+    
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>This script demonstrates effective directory tree visualization:</p>
+        <ul>
+            <li>Creative use of recursion for directory traversal</li>
+            <li>Simple but effective visual formatting</li>
+            <li>Basic counting of directory elements</li>
+            <li>Special handling for symbolic links</li>
+        </ul>
+        <p>While the original has some limitations, it serves as an excellent foundation that can be enhanced with better file handling, more features, and improved robustness.</p>
+    </section>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game of Life Script Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0 auto; max-width: 900px; padding: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .rules { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin: 10px 0; }
+        .improvement { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px; margin: 10px 0; }
+        .pattern { font-family: monospace; white-space: pre; }
+    </style>
+</head>
+<body>
+    <h1>Conway's Game of Life Script Analysis</h1>
+    
+    <div class="rules">
+        <h2>Game of Life Rules</h2>
+        <p>Conway's Game of Life is a cellular automaton with these simple rules:</p>
+        <ol>
+            <li>Any live cell with 2-3 live neighbors survives</li>
+            <li>Any dead cell with exactly 3 live neighbors becomes a live cell</li>
+            <li>All other live cells die; dead cells remain dead</li>
+        </ol>
+        <p>Neighbors include all 8 surrounding cells (Moore neighborhood).</p>
+    </div>
+    
+    <h2>Original Script Features</h2>
+    <ul>
+        <li>10x10 grid by default</li>
+        <li>Configurable generations and delay</li>
+        <li>File-based initial state</li>
+        <li>Basic boundary handling (edges die)</li>
+        <li>Living cell count tracking</li>
+    </ul>
+    
+    <h2>Common Life Patterns</h2>
+    <h3>Still Lifes (don't change)</h3>
+    <div class="pattern">■ ■
+■ ■</div>
+    
+    <h3>Oscillators (repeat every 2+ generations)</h3>
+    <div class="pattern">■ ■ ■</div>
+    
+    <h3>Spaceships (move across grid)</h3>
+    <div class="pattern">■ ■ ■
+■
+  ■</div>
+    
+    <div class="improvement">
+        <h2>Enhanced Version Features</h2>
+        <ul>
+            <li>Auto-detects grid size from input</li>
+            <li>Toroidal (wrapping) boundaries</li>
+            <li>Better visual representation</li>
+            <li>Configurable survival/birth rules</li>
+            <li>More efficient neighbor counting</li>
+            <li>Cleaner code structure</li>
+        </ul>
+    </div>
+    
+    <h2>Running the Simulation</h2>
+    <pre><code># Create pattern file (e.g., glider.txt)
+echo "■ ■ ■
+■
+  ■" > glider.txt
+
+# Run simulation
+./life-enhanced.sh glider.txt</code></pre>
+    
+    <h2>Mathematical Significance</h2>
+    <p>The Game of Life is Turing complete and has been used to study:</p>
+    <ul>
+        <li>Emergent behavior</li>
+        <li>Self-replication</li>
+        <li>Artificial life</li>
+        <li>Complex systems</li>
+    </ul>
+</body>
+</html>

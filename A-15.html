@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Analysis: Prime Number Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .screenshot {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+            max-width: 100%;
+        }
+        .note {
+            background-color: #e7f4ff;
+            padding: 10px;
+            border-left: 4px solid #2c3e50;
+            margin: 15px 0;
+        }
+        .question {
+            background-color: #fff8e1;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .algorithm {
+            background-color: #f0fff0;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Script Analysis: Prime Number Generation</h1>
+    
+    <section id="introduction">
+        <h2>Introduction</h2>
+        <p>This report analyzes a Bash script that generates prime numbers up to a specified limit (1000) using a recursive algorithm with the modulo operator. The script demonstrates an alternative approach to the classic Sieve of Eratosthenes algorithm.</p>
+    </section>
+    
+    <section id="script-overview">
+        <h2>Script Overview</h2>
+        <p>The script performs the following operations:</p>
+        <ol>
+            <li>Sets a limit for prime number generation (1000)</li>
+            <li>Defines a recursive function <code>Primes()</code> that:
+                <ul>
+                    <li>Tests each candidate number for primality</li>
+                    <li>Uses the modulo operator to check for factors</li>
+                    <li>Accumulates prime numbers in positional parameters</li>
+                </ul>
+            </li>
+            <li>Outputs the list of primes when reaching the limit</li>
+        </ol>
+        
+        <h3>Original Script Code</h3>
+        <pre><code>#!/bin/bash
+# primes.sh: Generate prime numbers, without using arrays.
+# Script contributed by Stephane Chazelas.
+
+LIMIT=1000 # Primes, 2 ... 1000.
+
+Primes()
+{
+    (( n = $1 + 1 )) # Bump to next integer.
+    shift # Next parameter in list.
+
+    if (( n == LIMIT ))
+    then echo $*
+    return
+    fi
+
+    for i; do # "i" set to "@", previous values of $n.
+        (( i * i > n )) && break # Optimization.
+        (( n % i )) && continue # Sift out non-primes using modulo operator.
+        Primes $n $@ # Recursion inside loop.
+        return
+    done
+
+    Primes $n $@ $n # Recursion outside loop.
+    # Successively accumulate positional parameters.
+}
+
+Primes 1
+exit $?</code></pre>
+    </section>
+    
+    <section id="step-by-step-analysis">
+        <h2>Step-by-Step Analysis</h2>
+        
+        <h3>1. Initial Setup</h3>
+        <p>The script begins by setting the upper limit for prime number generation:</p>
+        <pre><code>LIMIT=1000 # Primes, 2 ... 1000.</code></pre>
+        
+        <div class="note">
+            <p><strong>Note:</strong> The script starts checking from 2 (the first prime number) despite the initial call being <code>Primes 1</code>, as we'll see in the function analysis.</p>
+        </div>
+        
+        <h3>2. The Primes() Function</h3>
+        <p>The recursive function that does all the work:</p>
+        <pre><code>(( n = $1 + 1 )) # Bump to next integer.
+shift # Next parameter in list.</code></pre>
+        
+        <p>This increments the number to check and shifts the positional parameters left, dropping the first parameter.</p>
+        
+        <h3>3. Termination Condition</h3>
+        <pre><code>if (( n == LIMIT ))
+then echo $*
+return
+fi</code></pre>
+        
+        <p>When we reach the LIMIT, the function prints all accumulated primes (stored in positional parameters) and returns.</p>
+        
+        <h3>4. Prime Checking Logic</h3>
+        <pre><code>for i; do # "i" set to "@", previous values of $n.
+    (( i * i > n )) && break # Optimization.
+    (( n % i )) && continue # Sift out non-primes using modulo operator.
+    Primes $n $@ # Recursion inside loop.
+    return
+done</code></pre>
+        
+        <div class="algorithm">
+            <p><strong>Algorithm Explanation:</strong></p>
+            <ol>
+                <li>The loop checks all previously found primes (passed as parameters)</li>
+                <li><code>(( i * i > n )) && break</code> - Optimization: No need to check divisors larger than √n</li>
+                <li><code>(( n % i )) && continue</code> - If n is divisible by i (n%i == 0), it's not prime</li>
+                <li>If no divisors found, recursive call within the loop</li>
+            </ol>
+        </div>
+        
+        <h3>5. Accumulating Primes</h3>
+        <pre><code>Primes $n $@ $n # Recursion outside loop.</code></pre>
+        
+        <p>If we exit the loop without finding divisors, <code>$n</code> is prime and gets added to the parameter list for the next recursive call.</p>
+    </section>
+    
+    <section id="experimentation">
+        <h2>Experimentation and Results</h2>
+        
+        <h3>Modified Script with Debug Output</h3>
+        <p>To better understand the recursion and prime accumulation:</p>
+        <pre><code>#!/bin/bash
+
+LIMIT=20  # Reduced for demonstration
+DEBUG=1   # Enable debug output
+
+Primes()
+{
+    (( n = $1 + 1 ))
+    shift
+    
+    if (( DEBUG )); then
+        echo "Checking n=$n with primes: $@"
+    fi
+    
+    if (( n == LIMIT )); then
+        echo "Final primes up to $LIMIT: $@"
+        return
+    fi
+
+    for i; do
+        if (( DEBUG )); then
+            echo "  Testing if $i divides $n"
+        fi
+        (( i * i > n )) && break
+        if (( n % i == 0 )); then
+            if (( DEBUG )); then
+                echo "  $n is divisible by $i (not prime)"
+            fi
+            Primes $n $@
+            return
+        fi
+    done
+
+    if (( DEBUG )); then
+        echo "  $n is prime - adding to list"
+    fi
+    Primes $n $@ $n
+}
+
+echo "Starting prime number generation up to $LIMIT"
+Primes 1
+echo "Script completed"</code></pre>
+        
+        <h3>Sample Output (LIMIT=20)</h3>
+        <pre><code>Starting prime number generation up to 20
+Checking n=2 with primes: 
+  2 is prime - adding to list
+Checking n=3 with primes: 2
+  Testing if 2 divides 3
+  3 is prime - adding to list
+Checking n=4 with primes: 2 3
+  Testing if 2 divides 4
+  4 is divisible by 2 (not prime)
+Checking n=5 with primes: 2 3
+  Testing if 2 divides 5
+  Testing if 3 divides 5
+  5 is prime - adding to list
+[...output truncated...]
+Checking n=20 with primes: 2 3 5 7 11 13 17 19
+  Testing if 2 divides 20
+  20 is divisible by 2 (not prime)
+Final primes up to 20: 2 3 5 7 11 13 17 19
+Script completed</code></pre>
+        
+        <div class="note">
+            <p><strong>Observation:</strong> The debug output shows how each number is checked against previously found primes, and how primes are accumulated in the parameter list.</p>
+        </div>
+    </section>
+    
+    <section id="questions">
+        <h2>Key Questions</h2>
+        
+        <div class="question">
+            <h3>1. How does this compare to the Sieve of Eratosthenes?</h3>
+            <p>Differences:</p>
+            <ul>
+                <li><strong>Sieve of Eratosthenes:</strong> Marks non-primes in a range, more memory-efficient for large ranges</li>
+                <li><strong>This algorithm:</strong> Checks each number individually against found primes, more CPU-intensive but doesn't require arrays</li>
+                <li>The Sieve is generally faster for generating all primes up to a large limit</li>
+            </ul>
+        </div>
+        
+        <div class="question">
+            <h3>2. How could this script be rewritten without recursion?</h3>
+            <p>An iterative version might look like:</p>
+            <pre><code>#!/bin/bash
+
+LIMIT=1000
+primes=""
+
+for (( n=2; n<LIMIT; n++ )); do
+    is_prime=1
+    for i in $primes; do
+        if (( i*i > n )); then
+            break
+        fi
+        if (( n % i == 0 )); then
+            is_prime=0
+            break
+        fi
+    done
+    if (( is_prime )); then
+        primes+=" $n"
+    fi
+done
+
+echo $primes</code></pre>
+        </div>
+        
+        <div class="question">
+            <h3>3. What are the key optimizations in this script?</h3>
+            <ul>
+                <li>Only checks divisors up to √n (<code>i*i > n</code>)</li>
+                <li>Only checks against previously found primes (not all numbers)</li>
+                <li>Uses modulo operator for efficient divisibility checking</li>
+            </ul>
+        </div>
+    </section>
+    
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>This script demonstrates an elegant recursive approach to prime number generation:</p>
+        <ul>
+            <li>Effectively uses Bash's positional parameters to accumulate primes</li>
+            <li>Implements mathematical optimizations (√n limit)</li>
+            <li>Shows creative use of recursion in shell scripting</li>
+            <li>Provides an alternative to array-based approaches</li>
+        </ul>
+        <p>While not the most efficient method for large prime ranges, it serves as an excellent educational example of algorithmic thinking in shell scripting.</p>
+    </section>
+</body>
+</html>

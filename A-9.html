@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Soundex Conversion Script Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0 auto; max-width: 900px; padding: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .algorithm { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin: 10px 0; }
+        .improvement { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px; margin: 10px 0; }
+        .example { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Soundex Conversion Script Analysis</h1>
+    
+    <div class="algorithm">
+        <h2>The Soundex Algorithm</h2>
+        <p>Developed in the early 20th century, Soundex is a phonetic algorithm that indexes names by sound.</p>
+        
+        <h3>Standard Steps:</h3>
+        <ol>
+            <li>Retain the first letter of the name</li>
+            <li>Convert consonants to digits (see table below)</li>
+            <li>Remove consecutive duplicate digits</li>
+            <li>Remove all vowels and certain letters (A, E, I, O, U, Y, W, H)</li>
+            <li>Return the first letter followed by three digits</li>
+        </ol>
+        
+        <h3>Soundex Letter Values:</h3>
+        <table border="1">
+            <tr><th>Letters</th><th>Value</th></tr>
+            <tr><td>B, F, P, V</td><td>1</td></tr>
+            <tr><td>C, G, J, K, Q, S, X, Z</td><td>2</td></tr>
+            <tr><td>D, T</td><td>3</td></tr>
+            <tr><td>L</td><td>4</td></tr>
+            <tr><td>M, N</td><td>5</td></tr>
+            <tr><td>R</td><td>6</td></tr>
+        </table>
+    </div>
+    
+    <h2>Original Script Features</h2>
+    <ul>
+        <li>Implements standard Soundex algorithm</li>
+        <li>Handles special cases for vowels and H/W</li>
+        <li>Proper case handling (first letter capitalized)</li>
+        <li>Fixed 4-character output format</li>
+    </ul>
+    
+    <div class="example">
+        <h2>Example Conversions</h2>
+        <table border="1">
+            <tr><th>Name</th><th>Soundex</th></tr>
+            <tr><td>Robert</td><td>R163</td></tr>
+            <tr><td>Rupert</td><td>R163</td></tr>
+            <tr><td>Ashcraft</td><td>A226</td></tr>
+            <tr><td>Ashcroft</td><td>A226</td></tr>
+            <tr><td>Tymczak</td><td>T522</td></tr>
+        </table>
+    </div>
+    
+    <div class="improvement">
+        <h2>Enhanced Version Features</h2>
+        <ul>
+            <li>Input validation for alphabetic characters</li>
+            <li>More efficient text processing</li>
+            <li>Simplified exception handling</li>
+            <li>Better variable naming</li>
+            <li>Modern Bash features (parameter expansion)</li>
+        </ul>
+    </div>
+    
+    <h2>Modern Soundex Usage</h2>
+    <p>Soundex is commonly used in:</p>
+    <ul>
+        <li>Genealogy research</li>
+        <li>Customer record matching</li>
+        <li>Fuzzy name searching</li>
+        <li>Data deduplication</li>
+    </ul>
+    
+    <h2>Alternative Phonetic Algorithms</h2>
+    <pre><code># Python example using Metaphone
+from metaphone import doublemetaphone
+
+names = ["Smith", "Smythe", "Schmidt"]
+for name in names:
+    print(f"{name}: {doublemetaphone(name)}")
+
+# Output:
+# Smith: ('SM0', 'XMT')
+# Smythe: ('SM0', 'XMT')
+# Schmidt: ('XMT', 'SMT')</code></pre>
+</body>
+</html>
